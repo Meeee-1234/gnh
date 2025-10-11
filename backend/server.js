@@ -3,7 +3,9 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import authRoutes from "./routes/auth.js";
+import psqiRoutes from "./routes/PSQI.js";
 
 dotenv.config();
 const app = express();
@@ -24,7 +26,7 @@ app.get("/", (req, res) => {
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/psqi", require("./routes/PSQI"));
+app.use("/api/psqi", psqiRoutes);
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
