@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.js";
-import psqiRoutes from "./routes/PSQI.js";
+import psqiRoutes from "./routes/psqi.js";
 
 dotenv.config();
 const app = express();
