@@ -15,12 +15,11 @@ export default function Login() {
     setMessage(""); // clear ก่อน submit ใหม่
 
     try {
-      const res = await fetch(`${API}/login`, {
+      const res = await fetch(`${API}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
-
       const data = await res.json();
 
       if (res.ok) {
