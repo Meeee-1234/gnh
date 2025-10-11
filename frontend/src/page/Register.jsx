@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const API = "http://localhost:5000/api/auth";
+const API = process.env.REACT_APP_API_URL;
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
