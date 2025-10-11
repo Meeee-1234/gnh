@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import PSQI from "../models/PSQI.js";
+
 const router = express.Router();
-const PSQI = require("../models/PSQI");
 
 router.post("/", async (req, res) => {
   try {
@@ -17,7 +18,7 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     const newResult = new PSQI({
-      user_id: user_id || null, // บันทึกเป็น null ถ้าไม่ได้ login
+      user_id: user_id || null,
       bedtime,
       sleepLatencyMin,
       wakeTime,
@@ -36,4 +37,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

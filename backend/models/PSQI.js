@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const psqiSchema = new mongoose.Schema({
-  user_id: { type: String, default: null }, // ถ้า login แล้วจะส่ง user id มา
+  user_id: { type: String, default: null },
   bedtime: String,
   sleepLatencyMin: Number,
   wakeTime: String,
@@ -21,4 +21,4 @@ const psqiSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("PSQI", psqiSchema);
+export default mongoose.model("PSQI", psqiSchema);
