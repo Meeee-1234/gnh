@@ -1,21 +1,29 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem("user"));
-    if (localUser) {
-      setUser(localUser);
+    const raw = localStorage.getItem("authUser") || localStorage.getItem("user");
+    try {
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed) setUser(parsed);
+    } catch {
+      setUser(null);
     }
   }, []);
 
   const handleLogout = () => {
+    // ลบทั้งสองคีย์เผื่อจะมีทั้งสองแบบเก็บไว้ในระบบต่าง ๆ
+    localStorage.removeItem("authUser");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    setUser(null); // อัปเดต state
-    window.location.href = "/"; // รีเฟรชกลับหน้าแรก
+    setUser(null);
+
+    // ใช้ useNavigate() เพื่อ SPA-style navigation (ไม่รีเฟรชหน้า)
+    navigate("/");
   };
 
   return (

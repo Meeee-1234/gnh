@@ -24,7 +24,7 @@ export default function Login() {
 
       if (res.ok) {
         setMessage("เข้าสู่ระบบสำเร็จ 🎉");
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("authUser", JSON.stringify(data.user)); // ✅ ให้ตรงกับ key ที่ getAuthUserIdOrNull() ใช้
         localStorage.setItem("token", data.token);
 
         // รีไดเรกหน้า (เช่น ไปหน้า Home)

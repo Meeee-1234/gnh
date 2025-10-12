@@ -1,6 +1,8 @@
 
 import { useMemo, useState } from "react";
 
+const API = process.env.REACT_APP_API_URL;
+
 // ดึง user_id ของคนที่ login อยู่จาก localStorage
 function getAuthUserIdOrNull() {
   // อ่านคีย์ใหม่ก่อนเสมอ แล้วลบคีย์เก่าทิ้งถ้าพบ
@@ -577,7 +579,7 @@ export default function PSQISleepForm() {
   };
 
   try {
-    const res = await fetch("http://localhost:5000/api/psqi", {
+    const res = await fetch(`${API}/api/psqi`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
