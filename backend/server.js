@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.js";
 import psqiRoutes from "./routes/psqi.js";
+import diaryRoutes from "./routes/diaryRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/psqi", psqiRoutes);
+app.use("/api/diary", diaryRoutes);
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
