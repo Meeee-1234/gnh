@@ -25,18 +25,14 @@ export default function SleepDiary() {
     return (w - s) / (1000 * 60 * 60);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const totalHours = calculateHours(form.sleepTime, form.wakeTime);
-  if (!user?._id) {
-    alert("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
-    return;
-  }
-  const payload = { ...form, userId: user._id, totalHours };
-  await axios.post(`${API}/api/diary`, payload);
-  fetchDiaries();
-};
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const totalHours = calculateHours(form.sleepTime, form.wakeTime);
+    const payload = { ...form, userId: user._id, totalHours };
+    await axios.post(`${API}/api/diary`, payload);
+    setForm({ date: "", sleepTime: "", wakeTime: "", mood: "", note: "" });
+    fetchDiaries();
+  };
 
   const fetchDiaries = async () => {
     const { data } = await axios.get(`${API}/api/diary?userId=${user._id}`);
@@ -44,9 +40,8 @@ const handleSubmit = async (e) => {
   };
 
   useEffect(() => {
-  if (user?._id) fetchDiaries();
-}, [user?._id]);
-
+    if (user?.id) fetchDiaries();
+  }, []);
 
   return (
     <div className="container mx-auto p-6">
