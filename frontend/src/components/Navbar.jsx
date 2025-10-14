@@ -15,15 +15,12 @@ export default function Navbar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    // ลบทั้งสองคีย์เผื่อจะมีทั้งสองแบบเก็บไว้ในระบบต่าง ๆ
-    localStorage.removeItem("authUser");
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-
-    // ใช้ useNavigate() เพื่อ SPA-style navigation (ไม่รีเฟรชหน้า)
-    navigate("/");
+  const handleNameClick = () => {
+    if (user) {
+      navigate("/profile");
+    } else {
+      navigate("/login");
+    }
   };
 
   return (
@@ -44,17 +41,12 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <>
-                <span className="text-sm font-medium text-gray-800">
-                  👋 สวัสดี, {user.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-red-600 hover:underline"
-                >
-                  ออกจากระบบ
-                </button>
-              </>
+              <button
+                onClick={handleNameClick}
+                className="text-sm font-medium text-gray-800 hover:underline"
+              >
+                👋 สวัสดี, {user.name}
+              </button>
             ) : (
               <Link
                 to="/login"

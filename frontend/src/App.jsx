@@ -10,6 +10,7 @@ import Inform from "./page/Inform";
 import Therapy from "./page/Therapy";
 import PSQI from "./page/PSQI";
 import SleepDiary from "./page/SleepDiary";
+import Profile from "./page/Profile";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/therapy" element={<Therapy />} />
           <Route path="/psqi" element={<PSQI />} />
           <Route path="/sleepdiary" element={<SleepDiary />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -5,36 +5,29 @@ const API = process.env.REACT_APP_API_URL;
 
 // ดึง user_id ของคนที่ login อยู่จาก localStorage
 function getAuthUserIdOrNull() {
-  // อ่านคีย์ใหม่ก่อนเสมอ แล้วลบคีย์เก่าทิ้งถ้าพบ
   try {
-    const rawNew = localStorage.getItem("authUser"); // ค่าของ key ใหม่
-    const rawOld = localStorage.getItem("auth:user"); // ค่าของ key เก่า
+    const rawNew = localStorage.getItem("authUser");
+    const rawOld = localStorage.getItem("auth:user");
 
-    // ถ้ามี key ใหม่ -> ลบkey เก่า เพื่อไม่ให้ระบบสับสน
-    if (rawNew && rawOld) {
-      localStorage.removeItem("auth:user");
-    }
+    // ถ้ามี key ใหม่และเก่า ให้ลบของเก่าออก
+    if (rawNew && rawOld) localStorage.removeItem("auth:user");
 
-    // parse => ตี / แยกข้อความให้อยู่ในโครงสร้างข้อมูลที่โปรแกรมเข้าใจได้
     const parse = (s) => {
-      // ถ้า s เป็น null, undefined ให้คืนค่า null
       if (!s || s === "null" || s === "undefined") return null;
-      try { 
-        return JSON.parse(s); // แปลง string ที่อยู่ในรูป JSON -> เป็น JavaScript object
-      } catch { 
-        return null; // ถ้า พัง -> คืน null
+      try {
+        return JSON.parse(s);
+      } catch {
+        return null;
       }
     };
 
-    // งงชิบหาย
     const uNew = parse(rawNew);
-    if (uNew && (uNew.id || uNew.user?.id)) {
-      return uNew.id ?? uNew.user?.id ?? null;
+    if (uNew && (uNew.id || uNew.user?.id || uNew._id || uNew.user?._id)) {
+      return uNew.id ?? uNew.user?.id ?? uNew._id ?? uNew.user?._id ?? null;
     }
 
-    // key ใหม่ไม่มีค่า → fallback ไป key เก่า
     const uOld = parse(rawOld);
-    return uOld?.id ?? uOld?.user?.id ?? null;
+    return uOld?.id ?? uOld?.user?.id ?? uOld?._id ?? uOld?.user?._id ?? null;
   } catch {
     return null;
   }
@@ -85,11 +78,9 @@ const q10Items = [
 
 // toMinutes(str) => รับเวลาในรูปแบบ "HH:MM" แล้วแปลงเป็น "จำนวนนาทีรวม" เช่น 02.30 -> 150 นาที
 function toMinutes(str) {
-  if (!str || !/^\d{1,2}:\d{2}$/.test(str)) return null; // ว่าง, ไม่ตรง คืนค่า null
-  // แยกชั่วโมงกับนาที, .map(parseInt) → แปลง string เป็นตัวเลข (ฐาน 10)
-  const [h, m] = str.split(":").map((n) => parseInt(n, 10)); // n มาจาก แต่ละ element ของ array ที่ได้จาก str.split(":")
-  if (Number.isNaN(h) || Number.isNaN(m)) return null; // ไม่ใช่ตัวเลขจะคืนค่า null
-  
+  if (!str || !/^\d{1,2}:\d{2}$/.test(str)) return null;
+  const [h, m] = str.split(":").map((n) => parseInt(n, 10));
+  if (Number.isNaN(h) || Number.isNaN(m)) return null;
   return h * 60 + m;
 }
 
@@ -99,51 +90,43 @@ function timeInBedMinutes(bedtime, wakeTime) {
   const b = toMinutes(bedtime);
   const w = toMinutes(wakeTime);
   if (b == null || w == null) return null;
-  // ถ้าตื่นก่อนหรือเท่ากับเวลานอน -> ข้ามเที่ยงคืน +24ชม.
   return w > b ? w - b : w + 24 * 60 - b;
 }
-
         /* Rule-Based AI */
 // Component 1 : ความพึงพอใจในการนอน
 function scoreC1(q6) {
   switch (q6) {
-    case "very_good":
-      return 0;
-    case "fairly_good":
-      return 1;
-    case "fairly_bad":
-      return 2;
-    case "very_bad":
-      return 3;
-    default:
-      return null;
+    case "very_good": return 0;
+    case "fairly_good": return 1;
+    case "fairly_bad": return 2;
+    case "very_bad": return 3;
+    default: return null;
   }
 }
 
+
 // แปกๆ ติดไว้ก่อน
 // Component 2 : ระยะเวลาหลับ (Sleep Latency)
-function scoreC2(sleepLatencyMin, q51) { // sleepLatencyMin อยู่ใน const ด้านล่างใน export
+function scoreC2(sleepLatencyMin, q51) {
   if (sleepLatencyMin == null || q51 == null) return null;
   let lat;
   if (sleepLatencyMin <= 15) lat = 0;
   else if (sleepLatencyMin <= 30) lat = 1;
   else if (sleepLatencyMin <= 60) lat = 2;
   else lat = 3;
-
-  const sum = lat + q51; // 0–6
+  const sum = lat + q51;
   if (sum === 0) return 0;
   if (sum <= 2) return 1;
   if (sum <= 4) return 2;
   return 3;
 }
-
 // component 3: Sleep Duration (ชั่วโมงที่นอนจริง Q4)
 function scoreC3(hours) {
   if (hours == null) return null;
   if (hours > 7) return 0;
   if (hours >= 6) return 1;
   if (hours >= 5) return 2;
-  return 3; // น้อยกว่า 5 ชม return 3 เริ่มแย่ละ!!!
+  return 3;
 }
 
 // component 4: Habitual Sleep Efficiency (sleepHours / timeInBed)
@@ -155,28 +138,24 @@ function scoreC4(sleepHours, timeInBedMin) {
   if (efficiency >= 65) return 2;
   return 3;
 }
-
-// component 5: Sleep Disturbances (รวม Q5.2–Q5.10)
 function scoreC5(q5) {
   const keys = ["q52", "q53", "q54", "q55", "q56", "q57", "q58", "q59", "q510"];
   if (!q5 || keys.some((k) => q5[k] == null)) return null;
-  const sum = keys.reduce((acc, k) => acc + (q5[k] || 0), 0); // 0–27
+  const sum = keys.reduce((acc, k) => acc + (q5[k] || 0), 0);
   if (sum === 0) return 0;
   if (sum <= 9) return 1;
   if (sum <= 18) return 2;
   return 3;
 }
 
-// component 6: การใช้ยานอนหลับ (Q7)
 function scoreC6(q7) {
   if (q7 == null) return null;
-  return q7; // 0–3 ตรงตัว
+  return q7;
 }
 
-// component 7: Daytime Dysfunction (Q8 + Q9)
 function scoreC7(q8, q9) {
   if (q8 == null || q9 == null) return null;
-  const sum = q8 + q9; // 0–6
+  const sum = q8 + q9;
   if (sum === 0) return 0;
   if (sum <= 2) return 1;
   if (sum <= 4) return 2;
@@ -185,12 +164,10 @@ function scoreC7(q8, q9) {
 
 function interpretPSQI(globalScore) {
   if (globalScore == null) return null;
-  // เกณฑ์มาตรฐาน: >5 = คุณภาพการนอนแย่
   if (globalScore <= 5) return { level: "คุณภาพการนอนดี", color: "text-emerald-700", hint: "โดยรวมไม่มีปัญหาการนอนที่ชัดเจน" };
   if (globalScore <= 10) return { level: "มีปัญหาการนอนระดับเล็กน้อย-ปานกลาง", color: "text-amber-700", hint: "ลองปรับพฤติกรรมการนอน และติดตามอาการ" };
   return { level: "มีปัญหาการนอนระดับมาก", color: "text-rose-700", hint: "ควรพิจารณาปรึกษาแพทย์/ผู้เชี่ยวชาญด้านการนอน" };
 }
-
 /* ---------- UI Components ---------- */
 function TimeSelect({ label, value, onChange, required }) {
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);

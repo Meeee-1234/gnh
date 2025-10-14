@@ -29,8 +29,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-
-// ✅ Login (แก้ให้ใช้ _id)
+// ✅ Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -41,13 +40,12 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "รหัสผ่านไม่ถูกต้อง" });
 
-    // 🔹 สร้าง token
+    // สร้าง token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-    // 🔹 ส่งกลับ _id แทน id เพื่อให้ตรงกับ SleepDiary.jsx
     res.json({
       message: "เข้าสู่ระบบสำเร็จ 🎉",
-      user: { _id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email },
       token
     });
   } catch (err) {
