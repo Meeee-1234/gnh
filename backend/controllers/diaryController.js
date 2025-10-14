@@ -1,17 +1,15 @@
 import mongoose from "mongoose";
+
 import Diary from "../models/Diary.js";
 
+// ✅ POST /api/diary
 export const addDiary = async (req, res) => {
   try {
     const { userId, ...rest } = req.body;
 
-    // ✅ เช็กก่อนว่ามี userId ไหม
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "userId ไม่ถูกต้องหรือไม่มี" });
     }
-
-    console.log("📦 Payload:", req.body);
-    console.log("✅ typeof userId:", typeof userId);
 
     const diary = new Diary({
       ...rest,
@@ -19,12 +17,22 @@ export const addDiary = async (req, res) => {
     });
 
     await diary.save();
-
     res.status(201).json({ message: "เพิ่มบันทึกการนอนสำเร็จ", diary });
 
   } catch (err) {
     console.error("❌ Error saving diary:", err.message);
-    console.error("🧨 Full error:", err);
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการบันทึก", error: err.message });
+  }
+};
+
+// ✅ GET /api/diary?userId=xxx
+export const getDiaries = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const filter = userId ? { userId } : {};
+    const diaries = await Diary.find(filter).sort({ date: -1 });
+    res.json(diaries);
+  } catch (err) {
+    res.status(500).json({ message: "เกิดข้อผิดพลาด", error: err.message });
   }
 };
