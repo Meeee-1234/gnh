@@ -4,6 +4,35 @@ import axios from "axios";
 
 const API = process.env.REACT_APP_API_URL;
 
+// 🧩 ฟังก์ชันดึง userId แบบเดียวกับ PSQI
+function getAuthUserIdOrNull() {
+  try {
+    const rawNew = localStorage.getItem("authUser");
+    const rawOld = localStorage.getItem("auth:user");
+
+    if (rawNew && rawOld) localStorage.removeItem("auth:user");
+
+    const parse = (s) => {
+      if (!s || s === "null" || s === "undefined") return null;
+      try {
+        return JSON.parse(s);
+      } catch {
+        return null;
+      }
+    };
+
+    const uNew = parse(rawNew);
+    if (uNew && (uNew.id || uNew.user?.id || uNew._id || uNew.user?._id)) {
+      return uNew.id ?? uNew.user?.id ?? uNew._id ?? uNew.user?._id ?? null;
+    }
+
+    const uOld = parse(rawOld);
+    return uOld?.id ?? uOld?.user?.id ?? uOld?._id ?? uOld?.user?._id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function SleepDiary() {
   const [form, setForm] = useState({
     date: "",
@@ -25,85 +54,87 @@ export default function SleepDiary() {
   });
 
   const [diaries, setDiaries] = useState([]);
-  const user = JSON.parse(localStorage.getItem("auth:user") || "{}");
-  console.log("🧑‍💻 User from localStorage:", user); 
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const userId = getAuthUserIdOrNull();
+  console.log("🧠 Detected userId:", userId);
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!user._id) {
-    alert("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
-    return;
-  }
+    if (!userId) {
+      alert("❌ ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
+      return;
+    }
 
-  const payload = {
-  ...form,
-  userId: user._id,
-  sleepLatency: Number(form.sleepLatency),
-  awakenings: Number(form.awakenings),
-  awakeDuration: Number(form.awakeDuration),
-  totalSleepTime: Number(form.totalSleepTime),
-  sleepQuality: Number(form.sleepQuality || 0),       // ✅ Fallback
-  refreshed: Number(form.refreshed || 0),             // ✅ Fallback
-  morningFatigue: Number(form.morningFatigue || 0),   // ✅ Fallback
-  caffeineAfter18: Number(form.caffeineAfter18 || 0),
-  screenBeforeBed: Number(form.screenBeforeBed || 0),
-  stressEvent: form.stressEvent?.trim() || "",
-  note: form.note?.trim() || "",
-};
+    const payload = {
+      ...form,
+      userId,
+      sleepLatency: Number(form.sleepLatency),
+      awakenings: Number(form.awakenings),
+      awakeDuration: Number(form.awakeDuration),
+      totalSleepTime: Number(form.totalSleepTime),
+      sleepQuality: Number(form.sleepQuality || 0),
+      refreshed: Number(form.refreshed || 0),
+      morningFatigue: Number(form.morningFatigue || 0),
+      caffeineAfter18: Number(form.caffeineAfter18 || 0),
+      screenBeforeBed: Number(form.screenBeforeBed || 0),
+      stressEvent: form.stressEvent?.trim() || "",
+      note: form.note?.trim() || "",
+    };
 
-  try {
-    console.log("📤 Payload", payload); 
-    await axios.post(`${API}/api/diary`, payload);
-    setForm({
-      date: "",
-      bedTime: "",
-      sleepAttemptTime: "",
-      sleepLatency: "",
-      awakenings: "",
-      awakeDuration: "",
-      finalWakeTime: "",
-      outOfBedTime: "",
-      totalSleepTime: "",
-      sleepQuality: "",
-      refreshed: "",
-      morningFatigue: "",
-      caffeineAfter18: "",
-      screenBeforeBed: "",
-      stressEvent: "",
-      note: "",
-    });
-    fetchDiaries();
-  } catch (err) {
-    console.error("❌ Error submitting form:", err.response?.data || err.message);
-    alert("เกิดข้อผิดพลาดในการบันทึก กรุณาตรวจสอบข้อมูล");
-  }
-};
-
+    try {
+      console.log("📤 Sending payload:", payload);
+      await axios.post(`${API}/api/diary`, payload);
+      alert("✅ บันทึกข้อมูลสำเร็จ!");
+      setForm({
+        date: "",
+        bedTime: "",
+        sleepAttemptTime: "",
+        sleepLatency: "",
+        awakenings: "",
+        awakeDuration: "",
+        finalWakeTime: "",
+        outOfBedTime: "",
+        totalSleepTime: "",
+        sleepQuality: "",
+        refreshed: "",
+        morningFatigue: "",
+        caffeineAfter18: "",
+        screenBeforeBed: "",
+        stressEvent: "",
+        note: "",
+      });
+      fetchDiaries();
+    } catch (err) {
+      console.error("❌ Error submitting form:", err.response?.data || err.message);
+      alert("บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
+  };
 
   const fetchDiaries = async () => {
-    const { data } = await axios.get(`${API}/api/diary?userId=${user._id}`);
-    setDiaries(data);
+    if (!userId) return;
+    try {
+      const { data } = await axios.get(`${API}/api/diary?userId=${userId}`);
+      setDiaries(data);
+    } catch (err) {
+      console.error("❌ Error fetching diaries:", err.message);
+    }
   };
 
   useEffect(() => {
-    if (user?._id) fetchDiaries();
-  }, []);
+    if (userId) fetchDiaries();
+  }, [userId]);
 
   return (
-    <div className="container mx-auto p-6">
+<div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6 text-center">
         🛌 Sleep Diary (แบบบันทึกการนอนประจำวัน)
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 mb-8 bg-white p-6 rounded-2xl shadow-md">
         <h2 className="text-lg font-semibold border-b pb-2 mb-3">🕰 ส่วนที่ 1: ข้อมูลเวลา</h2>
-
-
 
         <div>
           <label className="block font-medium mb-1">📅 วันที่ที่ต้องการบันทึก</label>
@@ -118,10 +149,16 @@ export default function SleepDiary() {
         </div>
 
         <div>
-          <label className="block font-medium mb-1">1. คุณเข้านอนเวลาเท่าไร? (ตัวอย่าง: 22:30 น.)</label>
-          <input type="time" name="bedTime" value={form.bedTime} onChange={handleChange} required className="border p-2 rounded w-full" />
+          <label className="block font-medium mb-1">1. คุณเข้านอนเวลาเท่าไร?</label>
+          <input
+            type="time"
+            name="bedTime"
+            value={form.bedTime}
+            onChange={handleChange}
+            required
+            className="border p-2 rounded w-full"
+          />
         </div>
-
         <div>
           <label className="block font-medium mb-1">2. คุณเริ่มพยายามนอนหลับเวลาเท่าไร? (เวลาที่ปิดไฟและตั้งใจจะนอนจริง ๆ)</label>
           <input type="time" name="sleepAttemptTime" value={form.sleepAttemptTime} onChange={handleChange} required className="border p-2 rounded w-full" />
@@ -228,7 +265,7 @@ export default function SleepDiary() {
         <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 w-full mt-4">
           บันทึกข้อมูล
         </button>
-      </form>
+       </form>
 
       <h2 className="text-xl font-semibold mb-3">📅 ประวัติการนอน</h2>
       <table className="w-full border text-center text-sm">
