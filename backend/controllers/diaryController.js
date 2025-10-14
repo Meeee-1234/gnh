@@ -1,24 +1,30 @@
-// controllers/diaryController.js
+import mongoose from "mongoose";
 import Diary from "../models/Diary.js";
 
 export const addDiary = async (req, res) => {
   try {
-    console.log("📦 Received Diary Payload:", req.body); // ➕ เพิ่มบรรทัดนี้เพื่อดูว่ารับอะไรมา
-    const diary = new Diary(req.body);
-    await diary.save();
-    res.status(201).json({ message: "เพิ่มบันทึกการนอนสำเร็จ", diary });
-  } catch (err) {
-    console.error("❌ Error saving diary:", err); // ➕ เพิ่ม log
-    res.status(500).json({ message: "เกิดข้อผิดพลาด", error: err.message });
-  }
-};
+    const { userId, ...rest } = req.body;
 
-export const getDiaries = async (req, res) => {
-  try {
-    const { userId } = req.query;
-    const diaries = await Diary.find({ userId }).sort({ date: -1 });
-    res.json(diaries);
+    // ✅ เช็กก่อนว่ามี userId ไหม
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "userId ไม่ถูกต้องหรือไม่มี" });
+    }
+
+    console.log("📦 Payload:", req.body);
+    console.log("✅ typeof userId:", typeof userId);
+
+    const diary = new Diary({
+      ...rest,
+      userId: new mongoose.Types.ObjectId(userId),
+    });
+
+    await diary.save();
+
+    res.status(201).json({ message: "เพิ่มบันทึกการนอนสำเร็จ", diary });
+
   } catch (err) {
-    res.status(500).json({ message: "เกิดข้อผิดพลาด", error: err.message });
+    console.error("❌ Error saving diary:", err.message);
+    console.error("🧨 Full error:", err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการบันทึก", error: err.message });
   }
 };

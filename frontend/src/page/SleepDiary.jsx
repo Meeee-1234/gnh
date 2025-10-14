@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API = process.env.REACT_APP_API_URL;
 
 export default function SleepDiary() {
   const [form, setForm] = useState({
@@ -26,6 +26,7 @@ export default function SleepDiary() {
 
   const [diaries, setDiaries] = useState([]);
   const user = JSON.parse(localStorage.getItem("auth:user") || "{}");
+  console.log("🧑‍💻 User from localStorage:", user); 
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,21 +35,29 @@ export default function SleepDiary() {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  if (!user._id) {
+    alert("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
+    return;
+  }
+
   const payload = {
-    ...form,
-    userId: user._id,
-    sleepLatency: Number(form.sleepLatency),
-    awakenings: Number(form.awakenings),
-    awakeDuration: Number(form.awakeDuration),
-    totalSleepTime: Number(form.totalSleepTime),
-    sleepQuality: Number(form.sleepQuality),
-    refreshed: Number(form.refreshed),
-    morningFatigue: Number(form.morningFatigue),
-    caffeineAfter18: Number(form.caffeineAfter18),
-    screenBeforeBed: Number(form.screenBeforeBed),
-  };
+  ...form,
+  userId: user._id,
+  sleepLatency: Number(form.sleepLatency),
+  awakenings: Number(form.awakenings),
+  awakeDuration: Number(form.awakeDuration),
+  totalSleepTime: Number(form.totalSleepTime),
+  sleepQuality: Number(form.sleepQuality || 0),       // ✅ Fallback
+  refreshed: Number(form.refreshed || 0),             // ✅ Fallback
+  morningFatigue: Number(form.morningFatigue || 0),   // ✅ Fallback
+  caffeineAfter18: Number(form.caffeineAfter18 || 0),
+  screenBeforeBed: Number(form.screenBeforeBed || 0),
+  stressEvent: form.stressEvent?.trim() || "",
+  note: form.note?.trim() || "",
+};
 
   try {
+    console.log("📤 Payload", payload); 
     await axios.post(`${API}/api/diary`, payload);
     setForm({
       date: "",
