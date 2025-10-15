@@ -129,13 +129,16 @@ export default function SleepDiary() {
 
   return (
 <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        🛌 Sleep Diary (แบบบันทึกการนอนประจำวัน)
-      </h1>
+      <form onSubmit={handleSubmit} className="space-y-4 mb-8 bg-white p-6 rounded-2xl shadow-md">  
+        <header className="mb-6 space-y-2">
+          <h1 className="text-3xl font-bold text-gray-900 text-center">🛌 Sleep Diary 🛌</h1>
+          <h2 className="text-2xl font-bold text-gray-900 text-center">
+            แบบบันทึกการนอนประจำวัน
+          </h2>
+        </header>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8 bg-white p-6 rounded-2xl shadow-md">
-        <h2 className="text-lg font-semibold border-b pb-2 mb-3">🕰 ส่วนที่ 1: ข้อมูลเวลา</h2>
-
+        <h2 className="text-lg font-semibold border-b pb-4 mb-3">🕰 ส่วนที่ 1: ข้อมูลเวลา</h2>
+      
         <div>
           <label className="block font-medium mb-1">📅 วันที่ที่ต้องการบันทึก</label>
           <input
@@ -187,9 +190,9 @@ export default function SleepDiary() {
         <div>
           <label className="block font-medium mb-1">7. คุณลุกจากเตียงเวลาเท่าไร? (เวลาที่เริ่มวันใหม่จริง ๆ)</label>
           <input type="time" name="outOfBedTime" value={form.outOfBedTime} onChange={handleChange} className="border p-2 rounded w-full" />
-        </div>
+        </div><br/>
 
-        <h2 className="text-lg font-semibold border-b pb-2 mt-6 mb-3">🛌 ส่วนที่ 2: การประเมินคุณภาพการนอน</h2>
+        <h2 className="text-lg font-semibold border-b pb-4 mt-6 mb-3">🛌 ส่วนที่ 2: การประเมินคุณภาพการนอน</h2>
 
         <div>
           <label className="block font-medium mb-1">8. คุณคิดว่าคุณนอนหลับรวมทั้งหมดกี่ชั่วโมง?</label>
@@ -267,31 +270,7 @@ export default function SleepDiary() {
         </button>
        </form>
 
-      <h2 className="text-xl font-semibold mb-3">📅 ประวัติการนอน</h2>
-      <table className="w-full border text-center text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th>วันที่</th>
-            <th>ชั่วโมงนอน</th>
-            <th>คุณภาพ</th>
-            <th>สดชื่น</th>
-            <th>ง่วง</th>
-            <th>หมายเหตุ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {diaries.map((d) => (
-            <tr key={d._id}>
-              <td>{d.date}</td>
-              <td>{d.totalSleepTime}</td>
-              <td>{d.sleepQuality}</td>
-              <td>{d.refreshed}</td>
-              <td>{d.morningFatigue}</td>
-              <td>{d.note}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      
     </div>
   );
 }

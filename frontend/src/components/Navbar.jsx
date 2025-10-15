@@ -41,12 +41,25 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <button
-                onClick={handleNameClick}
-                className="text-sm font-medium text-gray-800 hover:underline"
-              >
-                👋 สวัสดี, {user.name}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleNameClick}
+                  className="text-sm font-medium text-gray-800 hover:underline"
+                >
+                  👋 สวัสดี, {user.name}
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("authUser");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("token");
+                    navigate("/"); // กลับหน้าแรก
+                  }}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <Link
                 to="/login"
